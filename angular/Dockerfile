@@ -1,29 +1,26 @@
-FROM node:16-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+# Use official node image as the base image
+FROM node:latest as build
+
+# Set the working directory
+WORKDIR /usr/local/app
+
+# Add the source code to app
+COPY ./ /usr/local/app/
+
+# Install all the dependencies
 RUN npm install
-COPY . .
+
+# Generate the build of the application
 RUN npm run build
-EXPOSE 4200
-CMD ["npm", "start"]
 
-# Stage 1: Build the Angular app
-# FROM node:18 as build
-# WORKDIR /usr/src/app
-# COPY package*.json ./
-# RUN npm ci
-# RUN npm install
-# COPY . .
-# RUN npm run build
 
-# CMD ["npm", "start"]
+# Stage 2: Serve app with nginx server
 
-# # Stage 2: Serve the Angular app with Nginx
-# FROM nginx:alpine
+# Use official nginx image as the base image
+FROM nginx:latest
 
-# COPY --from=build /usr/src/app/dist/hello-world-app /usr/share/nginx/html
+# Copy the build output to replace the default nginx contents.
+COPY --from=build /usr/local/app/dist/sample-angular-app /usr/share/nginx/html
 
-# EXPOSE 4200
-
-# CMD ["nginx", "-g", "daemon off;"]
+# Expose port 80
+EXPOSE 80
